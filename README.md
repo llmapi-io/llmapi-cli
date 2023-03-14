@@ -32,10 +32,8 @@ llmapi_cli --apikey="your key in llmapi.io" --bot=chatgpt --bot_key="your key in
 ```bash
 # 后续使用可以直接执行
 llmapi_cli
-
 # 或者切换bot
 llmapi_cli --bot=gpt3
-
 ```
 
 ### screenshot
