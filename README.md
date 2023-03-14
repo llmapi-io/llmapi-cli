@@ -38,6 +38,8 @@ llmapi_cli --bot=gpt3
 
 ```
 
+### screenshot
+![image](imgs/llmapi_cli_demo.png)
 
 # 当前支持的LLM
  - `chatgpt`:openai的官方ChatGPT api
