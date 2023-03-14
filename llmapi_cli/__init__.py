@@ -24,7 +24,7 @@ import requests
 import time
 
 __name__ = 'llmapi_cli'
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 __description__ = 'Do you want to talk directly to the LLMs? Try llmapi.'
 __keywords__ = 'LLM OpenAPI LargeLanguageModel GPT3 ChatGPT'
 __author__ = 'llmapi'
