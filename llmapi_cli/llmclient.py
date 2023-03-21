@@ -28,7 +28,7 @@ def _make_post(url,content):
         return {'code':-1,'msg':'request failed'}
 
 class LLMClient():
-    def __init__(self, host:str = 'https://api.llmapi.io', apikey:str = '', bot_type:str = 'mock'):
+    def __init__(self, host:str = 'https://api.llmapi.io', bot_type:str = 'mock', apikey:str = None):
         self.host = host
         self.apikey = apikey
         self.bot_type = bot_type
@@ -39,7 +39,9 @@ class LLMClient():
 
     def _start_session(self):
         url = self.host + '/v1/chat/start'
-        content = {'apikey':self.apikey, 'bot_type':self.bot_type}
+        content = {'bot_type':self.bot_type}
+        if self.apikey is not None:
+            content['apikey'] = self.apikey
         rep = _make_post(url,content)
         if rep['code'] == 0:
             return rep['session']
@@ -50,7 +52,9 @@ class LLMClient():
     def _end_session(self):
         try:
             url = self.host + '/v1/chat/end'
-            content = {'apikey':self.apikey, 'session':self.session}
+            content = {'session':self.session}
+            if self.apikey is not None:
+                content['apikey'] = self.apikey
             r = _make_post(url,content)
             return r
         except Exception:
@@ -58,7 +62,9 @@ class LLMClient():
 
     def ask(self, prompt:str):
         url = self.host + '/v1/chat/ask'
-        content = {'apikey':self.apikey, 'session':self.session, 'content':prompt, 'timeout':60}
+        content = {'session':self.session, 'content':prompt, 'timeout':60}
+        if self.apikey is not None:
+                content['apikey'] = self.apikey
         rep = _make_post(url,content)
 
         if rep['reply'] == 'None':
