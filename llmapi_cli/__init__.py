@@ -23,8 +23,10 @@ import getpass
 import requests
 import time
 
+from llmapi_cli.llmclient import LLMClient
+
 __name__ = 'llmapi_cli'
-__version__ = '1.0.3'
+__version__ = '1.0.4'
 __description__ = 'Do you want to talk directly to the LLMs? Try llmapi.'
 __keywords__ = 'LLM OpenAPI LargeLanguageModel GPT3 ChatGPT'
 __author__ = 'llmapi'
@@ -49,14 +51,6 @@ def _loading():
               (em, lock[1] or '' if len(lock) >= 2 else '', time.time() - t1))
         time.sleep(0.1)
 
-def _make_post(url,content):
-    try:
-        res = requests.post(url, data = json.dumps(content))
-        rep = res.json()
-        return rep
-    except Exception:
-        return {'code':-1,'msg':'request failed'}
-
 def _get_time():
     return time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())
 
@@ -80,55 +74,6 @@ def _load_cache()->dict:
             return info
         except Exception:
             return {}
-class LLMClient():
-    def __init__(self, host:str, apikey:str, bot_type:str, bot_key:str):
-        self.host = host
-        self.apikey = apikey
-        self.bot_type = bot_type
-        self.bot_key = bot_key
-        self.session = self._start_session()
-        if self.session == 0:
-            print('start session failed')
-            exit()
-
-    def _start_session(self):
-        url = self.host + '/v1/chat/start'
-        content = {'apikey':self.apikey, 'bot_type':self.bot_type}
-        if self.bot_key:
-            content['bot_key'] = self.bot_key
-        rep = _make_post(url,content)
-        if rep['code'] == 0:
-            return rep['session']
-        else:
-            print("error message : ", rep['msg'])
-            return 0
-
-    def _end_session(self):
-        try:
-            url = self.host + '/v1/chat/end'
-            content = {'apikey':self.apikey, 'session':self.session}
-            r = _make_post(url,content)
-            return r
-        except Exception:
-            return None
-
-    def ask(self, prompt:str):
-        url = self.host + '/v1/chat/ask'
-        content = {'apikey':self.apikey, 'session':self.session, 'content':prompt, 'timeout':60}
-        rep = _make_post(url,content)
-
-        if rep['reply'] == 'None':
-            return -1,'timeout'
-        if rep['code'] == 0:
-            return rep['code'],rep['reply']
-        else:
-            return rep['code'],rep['msg']
-
-    def __str__(self):
-        print(f"| [host]:{self.host}")
-        print(f"| [session]:{self.session}")
-        print(f"| [bot_type]:{self.bot_type}")
-        return ""
 
 def _parse_arg():
     parse = ap.ArgumentParser(formatter_class=RawTextHelpFormatter,description=f"""
@@ -142,7 +87,6 @@ def _parse_arg():
             """)
     parse.add_argument('--apikey', type=str, help='Your api key.')
     parse.add_argument('--host', type=str, help='')
-    parse.add_argument('--bot_key', type=str, help='Your openai key, if you use your own OpenAI API key, there are no conversation limits.')
     arg = parse.parse_args()
     return arg
 
@@ -182,7 +126,7 @@ def main():
 
     _save_cache(cache_info['host'], cache_info['apikey'], cache_info['bot_type'])
 
-    client = LLMClient(cache_info['host'], cache_info['apikey'], cache_info['bot_type'], bot_key=arg.bot_key)
+    client = LLMClient(cache_info['host'], cache_info['apikey'], cache_info['bot_type'])
     print( "\n =================================================")
     print(f" * LLMClient version {__version__}")
     print(f" * Visit 'https://llmapi.io' for more info.")

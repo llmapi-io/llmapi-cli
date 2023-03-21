@@ -1,45 +1,65 @@
-# 介绍
+<p align="center">
+  <img width="180" src="https://avatars.githubusercontent.com/u/127706964?s=200&v=4" alt="LLMApi Cli">
+  <h1 align="center">LLMApi Cli</h1>
+  <p align="center">Talk to LLMs like ChatGPT in command line </p>
+</p>
 
-llmapi_cli 是一个可以直接和chatgpt/gpt3以及更多大语言模型聊天的命令行工具，基于llmapi.io接口
-同时llmapi_cli也提供了Python module (LLMClient)
-更多信息请访问: https://llmapi.io
+# Introduction
 
-## 安装(Install)
+[中文文档](README.zh.md)
+
+`llmapi_cli` is a command-line tool that can directly chat with `chatgpt`/`gpt3` and more large language models(LLM), based on the `llmapi-server` interface.
+At the same time llmapi_cli also provides Python module (`LLMClient`).
+
+> For more information visit: [llmapi.io](https://llmapi.io)
+
+## Install
 
 ```bash
-# 使用pip库
+# install from pypi
 python3 -m pip install llmapi_cli
 ```
 
 ```bash
-# 本地开发使用
-python3 setup.py develop
+# install locally
+python3 setup.py install
 ```
 
-## 使用(Usage)
+## Usage
 
 ```bash
-# 初次使用时需要配置apikey和bot类型,成功后将缓存
-llmapi_cli --apikey="your key in llmapi.io" --bot=chatgpt
+# The first time you use this command,
+# you need to specify parameters, this 
+# will be cached after successful connection.
+
+# If you use your own llmapi-server:
+llmapi_cli --host='http://127.0.0.1:5050' --bot=mock
+
+# If you use api.llmapi.io (which is default host):
+llmapi_cli --bot=mock --apikey='your apikey on llmapi.io'
 ```
 
 ```bash
-# 如果你有自己的bot key(即llm官方的key，如openai's api key)
-# 可以配置使用，聊天次数将不受限制
-llmapi_cli --apikey="your key in llmapi.io" --bot=chatgpt --bot_key="your key in openai(or others)"
-```
-
-```bash
-# 后续使用可以直接执行
+# You can directly use this command again:
 llmapi_cli
-# 或者切换bot
+
+# Or change the bot type:
 llmapi_cli --bot=gpt3
+
+# Or redesignate params like first time.
 ```
 
-### screenshot
+### Screenshot
 ![image](imgs/llmapi_cli_demo.png)
 
-# 当前支持的LLM
- - `chatgpt`:openai的官方ChatGPT api
- - `gpt3`:openai的官方GPT-3 api
+# Currently supported bot type
+
+> View [llmapi-server](https://github.com/llmapi-io/llmapi-server) for more information.
+
+Warning: Currently for testing only
+
+ - `chatgpt`: openai's official ChatGPT,[see more](https://openai.com/blog/introducing-chatgpt-and-whisper-apis)
+ - `gpt3`: openai's official GPT-3
+ - `welm`: Tencent weixin's llm,[see more](https://welm.weixin.qq.com/docs/introduction/)
+ - `newbing`: microsoft's new bing chat, `UNOFFICIAL INTERFACE`
 
