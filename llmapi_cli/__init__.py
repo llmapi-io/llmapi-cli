@@ -26,7 +26,7 @@ import time
 from llmapi_cli.llmclient import LLMClient
 
 __name__ = 'llmapi_cli'
-__version__ = '1.0.4'
+__version__ = '1.0.5'
 __description__ = 'Do you want to talk directly to the LLMs? Try llmapi.'
 __keywords__ = 'LLM OpenAPI LargeLanguageModel GPT3 ChatGPT'
 __author__ = 'llmapi'
@@ -95,15 +95,18 @@ def main():
 
     cache_info = _load_cache()
 
-    if ('apikey' not in cache_info) and (not arg.apikey):
-        print('----------------------------------------------------------')
-        print('LLMApi is unified OpenApi for Large Language Models.')
-        print(f'[Version]:{__version__}, [HomePage]:https://llmapi.io')
-        print('----------------------------------------------------------')
-        print('\nSpecify your apikey first.')
-        print('example:llmapi_cli --apikey="xxxx"\n')
-        exit()
-    if ('bot_type' not in cache_info) and (not arg.bot):
+    if arg.host:
+        cache_info['host'] = arg.host
+    elif 'host' not in cache_info:
+        default_host = 'https://api.llmapi.io'
+        print("Using default host : ", default_host)
+        cache_info['host'] = default_host
+    else:
+        pass
+
+    if arg.bot:
+        cache_info['bot_type'] = arg.bot
+    elif 'bot_type' not in cache_info:
         print('----------------------------------------------------------')
         print('LLMApi is unified OpenApi for Large Language Models.')
         print(f'[Version]:{__version__}, [HomePage]:https://llmapi.io')
@@ -112,21 +115,17 @@ def main():
         print('example:llmapi_cli --bot="chatgpt"\n')
         exit()
 
-    if arg.host:
-        cache_info['host'] = arg.host
-    elif 'host' not in cache_info:
-        cache_info['host'] = 'https://api.llmapi.io'
+    if arg.apikey:
+        cache_info['apikey'] = arg.apikey
+    elif 'apikey' not in cache_info:
+        cache_info['apikey'] = None
     else:
         pass
 
-    if arg.bot:
-        cache_info['bot_type'] = arg.bot
-    if arg.apikey:
-        cache_info['apikey'] = arg.apikey
 
     _save_cache(cache_info['host'], cache_info['apikey'], cache_info['bot_type'])
 
-    client = LLMClient(cache_info['host'], cache_info['apikey'], cache_info['bot_type'])
+    client = LLMClient(cache_info['host'], cache_info['bot_type'], cache_info['apikey'])
     print( "\n =================================================")
     print(f" * LLMClient version {__version__}")
     print(f" * Visit 'https://llmapi.io' for more info.")
