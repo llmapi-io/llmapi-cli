@@ -1,7 +1,8 @@
 <p align="center">
   <img width="180" src="https://avatars.githubusercontent.com/u/127706964?s=200&v=4" alt="LLMApi Cli">
   <h1 align="center">LLMApi Cli</h1>
-  <p align="center">Talk to LLMs like ChatGPT in command line </p>
+  <p align="center">Talk to LLMs like ChatGPT in command line</p>
+
 </p>
 
 # Introduction
@@ -31,10 +32,10 @@ python3 setup.py install
 # The first time you use this command,
 # you need to specify parameters, this 
 # will be cached after successful connection.
-
+#
 # If you use your own llmapi-server:
 llmapi_cli --host='http://127.0.0.1:5050' --bot=mock
-
+#
 # If you use api.llmapi.io (which is default host):
 llmapi_cli --bot=mock --apikey='your apikey on llmapi.io'
 ```
@@ -42,10 +43,10 @@ llmapi_cli --bot=mock --apikey='your apikey on llmapi.io'
 ```bash
 # You can directly use this command again:
 llmapi_cli
-
+#
 # Or change the bot type:
 llmapi_cli --bot=gpt3
-
+#
 # Or redesignate params like first time.
 ```
 
