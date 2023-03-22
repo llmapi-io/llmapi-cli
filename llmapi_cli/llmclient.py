@@ -10,72 +10,131 @@
     :license:   MIT, see LICENSE for more details.
     :copyright: Copyright (c) 2023 llmapi. All rights reserved
 """
-from threading import Thread
-import sys
+
+from typing import Optional
 import json
-import os
-import argparse as ap
-from argparse import RawTextHelpFormatter
-import getpass
 import requests
-import time
-def _make_post(url,content):
-    try:
-        res = requests.post(url, data = json.dumps(content))
-        rep = res.json()
-        return rep
-    except Exception:
-        return {'code':-1,'msg':'request failed'}
+
 
 class LLMClient():
-    def __init__(self, host:str = 'https://api.llmapi.io', bot_type:str = 'mock', apikey:str = None):
+    """
+    A client for the llmapi.
+    """
+
+    def __init__(self, host: str = 'https://api.llmapi.io', bot_type: str = 'mock', apikey: Optional[str] = None):
+        """
+        Initializes the LLMClient.
+
+        Args:
+        - host (str): The url of llmapi server. Default is 'https://api.llmapi.io'.
+        - bot_type (str): The type of bot to start. Default is 'mock'.
+        - apikey (Optional[str]): The apikey to use for authentication. If None, no authentication is used. Default is None.
+
+        Returns:
+        - None.
+        """
         self.host = host
         self.apikey = apikey
         self.bot_type = bot_type
-        self.session = self._start_session()
-        if self.session == 0:
-            print('start session failed')
-            exit()
+        self.session_id = None
 
-    def _start_session(self):
-        url = self.host + '/v1/chat/start'
-        content = {'bot_type':self.bot_type}
-        if self.apikey is not None:
-            content['apikey'] = self.apikey
-        rep = _make_post(url,content)
-        if rep['code'] == 0:
-            return rep['session']
-        else:
-            print("error message : ", rep['msg'])
-            return 0
+    def _make_post(self, url: str, content: dict) -> dict:
+        """
+        Makes a post request to the llmapi server
 
-    def _end_session(self):
+        Args:
+        - url (str): The url to post the request to.
+        - content (dict): The content to include in the post request.
+
+        Returns:
+        - (dict): The response from the server.
+        """
         try:
-            url = self.host + '/v1/chat/end'
-            content = {'session':self.session}
+            headers = {'Content-Type': 'application/json'}
             if self.apikey is not None:
                 content['apikey'] = self.apikey
-            r = _make_post(url,content)
-            return r
+            res = requests.post(url, headers=headers, json=content)
+            rep = res.json()
+            return rep
         except Exception:
-            return None
+            return {'code': -1, 'msg': 'request failed'}
 
-    def ask(self, prompt:str):
-        url = self.host + '/v1/chat/ask'
-        content = {'session':self.session, 'content':prompt, 'timeout':60}
-        if self.apikey is not None:
-                content['apikey'] = self.apikey
-        rep = _make_post(url,content)
+    def start_session(self) -> bool:
+        """
+        Starts a new chat session.
 
-        if rep['reply'] == 'None':
-            return -1,'timeout'
-        if rep['code'] == 0:
-            return rep['code'],rep['reply']
+        Args:
+        - None.
+
+        Returns:
+        - (bool): True if the session was started successfully, False otherwise.
+        """
+        url = f"{self.host}/v1/chat/start"
+        content = {'bot_type': self.bot_type}
+        rep = self._make_post(url, content)
+        if 'code' in rep and rep['code'] == 0:
+            self.session_id = rep['session']
+            return True
         else:
-            return rep['code'],rep['msg']
+            print(rep)
+            return False
+
+    def end_session(self) -> None:
+        """
+        Ends the current chat session.
+
+        Args:
+        - None.
+
+        Returns:
+        - None.
+        """
+        if self.session_id is None:
+            return False
+        url = f"{self.host}/v1/chat/end"
+        content = {'session': self.session_id}
+        self._make_post(url, content)
+        self.session_id = None
+
+    def ask(self, prompt: str, timeout: int = 60) -> tuple:
+        """
+        Asks a question to the llmapi and gets a response.
+
+        Args:
+        - prompt (str): The question to ask the llmapi.
+
+        Returns:
+        - (tuple[int,str]): A tuple with two values: the result code (0 for success, -1 for failure) and the response from the llmapi.
+        """
+        if self.session_id is None:
+            return -1, 'session invalid'
+        url = f"{self.host}/v1/chat/ask"
+        content = {'session': self.session_id,
+                   'content': prompt, 'timeout': timeout}
+        rep = self._make_post(url, content)
+        if 'code' in rep and rep['code'] == 0:
+            return rep['code'], rep['reply']
+        elif 'code' in rep:
+            return rep['code'], rep['msg']
+        else:
+            return -1, 'request failed'
 
     def __str__(self):
-        print(f"| [host]:{self.host}")
-        print(f"| [session]:{self.session}")
-        print(f"| [bot_type]:{self.bot_type}")
-        return ""
+        """
+        Returns a string representation of the LLMClient.
+
+        Args:
+        - None.
+
+        Returns:
+        - (str): The string representation of the LLMClient.
+        """
+        s = ""
+        s += f"| host     | {self.host}\n"
+        s += f"| session  | {self.session_id}\n"
+        s += f"| bot_type | {self.bot_type}\n"
+        if self.apikey is not None:
+            s += f"| apikey   | {self.apikey[0:3]+'*'*(len(self.apikey)-6)+self.apikey[-3:]}\n"
+        else:
+            s += f"| apikey   | None\n"
+        return s
