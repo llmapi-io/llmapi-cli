@@ -12,8 +12,7 @@
 """
 
 from typing import Optional
-import json
-import requests
+import aiohttp
 
 
 class LLMClient():
@@ -38,7 +37,7 @@ class LLMClient():
         self.bot_type = bot_type
         self.session_id = None
 
-    def _make_post(self, url: str, content: dict) -> dict:
+    async def _make_post(self, url: str, content: dict) -> dict:
         """
         Makes a post request to the llmapi server
 
@@ -53,13 +52,13 @@ class LLMClient():
             headers = {'Content-Type': 'application/json'}
             if self.apikey is not None:
                 content['apikey'] = self.apikey
-            res = requests.post(url, headers=headers, json=content)
-            rep = res.json()
-            return rep
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, headers=headers, json=content) as resp:
+                    return await resp.json()
         except Exception:
             return {'code': -1, 'msg': 'request failed'}
 
-    def start_session(self) -> bool:
+    async def start_session(self) -> bool:
         """
         Starts a new chat session.
 
@@ -71,7 +70,7 @@ class LLMClient():
         """
         url = f"{self.host}/v1/chat/start"
         content = {'bot_type': self.bot_type}
-        rep = self._make_post(url, content)
+        rep = await self._make_post(url, content)
         if 'code' in rep and rep['code'] == 0:
             self.session_id = rep['session']
             return True
@@ -79,7 +78,7 @@ class LLMClient():
             print(rep)
             return False
 
-    def end_session(self) -> None:
+    async def end_session(self) -> None:
         """
         Ends the current chat session.
 
@@ -93,10 +92,10 @@ class LLMClient():
             return False
         url = f"{self.host}/v1/chat/end"
         content = {'session': self.session_id}
-        self._make_post(url, content)
+        await self._make_post(url, content)
         self.session_id = None
 
-    def ask(self, prompt: str, timeout: int = 60) -> tuple:
+    async def ask(self, prompt: str, timeout: int = 60) -> tuple:
         """
         Asks a question to the llmapi and gets a response.
 
@@ -111,7 +110,7 @@ class LLMClient():
         url = f"{self.host}/v1/chat/ask"
         content = {'session': self.session_id,
                    'content': prompt, 'timeout': timeout}
-        rep = self._make_post(url, content)
+        rep = await self._make_post(url, content)
         if 'code' in rep and rep['code'] == 0:
             return rep['code'], rep['reply']
         elif 'code' in rep:

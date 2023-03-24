@@ -20,11 +20,12 @@ import os
 import argparse as ap
 from argparse import RawTextHelpFormatter
 import time
+import asyncio
 
 from llmapi_cli.llmclient import LLMClient
 
 __name__ = 'llmapi_cli'
-__version__ = '1.0.6'
+__version__ = '1.0.7'
 __description__ = 'Do you want to talk directly to the LLMs? Try llmapi.'
 __keywords__ = 'LLM OpenAPI LargeLanguageModel GPT3 ChatGPT'
 __author__ = 'llmapi'
@@ -132,7 +133,7 @@ def main():
 
     client = LLMClient(host=cache_info['host'],
                        bot_type=cache_info['bot_type'], apikey=cache_info['apikey'])
-    if not client.start_session():
+    if not asyncio.run(client.start_session()):
         print(client)
         print("Session start failed.")
         print("Please check your host, bot_type or apikey.")
@@ -173,7 +174,7 @@ def main():
             except Exception as e:
                 print(e)
             try:
-                ret, rep = client.ask(prompt)
+                ret, rep = asyncio.run(client.ask(prompt))
             except Exception as e:
                 lock[0] = False
                 print("[ERR] Get reply failed, please try again.")
@@ -192,7 +193,7 @@ def main():
             print("-----------------<  END OF REPLY  >-----------------")
             print("")
     except KeyboardInterrupt:
-        r = client.end_session()
+        r = asyncio.run(client.end_session())
         if r != None:
             print('\n >> [End session success]')
         print(' >> [Bye~]')
