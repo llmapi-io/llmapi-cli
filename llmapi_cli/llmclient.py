@@ -21,7 +21,7 @@ class LLMClient():
     A client for the llmapi.
     """
 
-    def __init__(self, host: str = 'https://api.llmapi.io', bot_type: str = 'mock', apikey: Optional[str] = None):
+    def __init__(self, host: str = 'https://api.llmapi.io', bot_type: str = 'mock', apikey: Optional[str] = None, system: str = None):
         """
         Initializes the LLMClient.
 
@@ -37,6 +37,7 @@ class LLMClient():
         self.apikey = apikey
         self.bot_type = bot_type
         self.session_id = None
+        self.system = system
 
     def _make_post(self, url: str, content: dict) -> dict:
         """
@@ -70,7 +71,9 @@ class LLMClient():
         - (bool): True if the session was started successfully, False otherwise.
         """
         url = f"{self.host}/v1/chat/start"
-        content = {'bot_type': self.bot_type}
+        content = {'bot_type': self.bot_type, 'settings': {}}
+        if self.system is not None:
+            content['settings']['system'] = self.system
         rep = self._make_post(url, content)
         if 'code' in rep and rep['code'] == 0:
             self.session_id = rep['session']

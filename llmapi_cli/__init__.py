@@ -24,7 +24,7 @@ import time
 from llmapi_cli.llmclient import LLMClient
 
 __name__ = 'llmapi_cli'
-__version__ = '1.0.6'
+__version__ = '1.0.8'
 __description__ = 'Do you want to talk directly to the LLMs? Try llmapi.'
 __keywords__ = 'LLM OpenAPI LargeLanguageModel GPT3 ChatGPT'
 __author__ = 'llmapi'
@@ -88,8 +88,10 @@ def _parse_arg():
     parse.add_argument('--bot', type=str, help="""Type of LLM bot you want to talk with:
   - gpt3           GPT-3 is openai's classic LLM with 175B Params
   - chatgpt        ChatGPT is openai's popular and powerful LLM based on GPT-3.5
+  - welm           https://welm.weixin.qq.com/docs/introduction/
             """)
     parse.add_argument('--apikey', type=str, help='Your api key.')
+    parse.add_argument('--system', type=str, help='System field if chatgpt')
     parse.add_argument('--host', type=str, help='')
     arg = parse.parse_args()
     return arg
@@ -130,8 +132,11 @@ def main():
     _save_cache(cache_info['host'], cache_info['apikey'],
                 cache_info['bot_type'])
 
+    system = None
+    if arg.system:
+        system = arg.system
     client = LLMClient(host=cache_info['host'],
-                       bot_type=cache_info['bot_type'], apikey=cache_info['apikey'])
+                       bot_type=cache_info['bot_type'], apikey=cache_info['apikey'], system=system)
     if not client.start_session():
         print(client)
         print("Session start failed.")
