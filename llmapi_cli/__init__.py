@@ -24,9 +24,9 @@ import time
 from llmapi_cli.llmclient import LLMClient
 
 __name__ = 'llmapi_cli'
-__version__ = '1.0.8'
+__version__ = '1.1.0'
 __description__ = 'Do you want to talk directly to the LLMs? Try llmapi.'
-__keywords__ = 'LLM OpenAPI LargeLanguageModel GPT3 ChatGPT'
+__keywords__ = 'LLM OpenAPI LargeLanguageModel GPT3 ChatGPT Embedding'
 __author__ = 'llmapi'
 __contact__ = 'llmapi@163.com'
 __url__ = 'https://llmapi.io/'
@@ -56,12 +56,12 @@ def _get_time():
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
 
-def _save_cache(host: str, apikey: str, bot_type: str):
+def _save_cache(host: str, apikey: str, bot_type: str, system: str = None, model: str = None):
     path = os.environ.get('HOME') + '/.llmapi_cli'
     if not os.path.exists(path):
         os.mkdir(path)
     with open(path + '/cache', 'w+') as f:
-        info = {'host': host, 'apikey': apikey, 'bot_type': bot_type}
+        info = {'host': host, 'apikey': apikey, 'bot_type': bot_type, 'system': system,'model':model}
         f.write(json.dumps(info))
         f.flush()
         f.close()
@@ -88,10 +88,11 @@ def _parse_arg():
     parse.add_argument('--bot', type=str, help="""Type of LLM bot you want to talk with:
   - gpt3           GPT-3 is openai's classic LLM with 175B Params
   - chatgpt        ChatGPT is openai's popular and powerful LLM based on GPT-3.5
+  - gpt-embedding  openai's embedding model, default is 'text-embedding-ada-002'
   - welm           https://welm.weixin.qq.com/docs/introduction/
             """)
     parse.add_argument('--apikey', type=str, help='Your api key.')
-    parse.add_argument('--system', type=str, help='System field if chatgpt')
+    parse.add_argument('--system', type=str, help='system field if chatgpt')
     parse.add_argument('--host', type=str, help='')
     arg = parse.parse_args()
     return arg
@@ -129,14 +130,18 @@ def main():
     else:
         pass
 
+    if arg.system:
+        cache_info['system'] = arg.system
+    elif 'system' not in cache_info:
+        cache_info['system'] = None
+    else:
+        pass
+
     _save_cache(cache_info['host'], cache_info['apikey'],
                 cache_info['bot_type'])
 
-    system = None
-    if arg.system:
-        system = arg.system
     client = LLMClient(host=cache_info['host'],
-                       bot_type=cache_info['bot_type'], apikey=cache_info['apikey'], system=system)
+                       bot_type=cache_info['bot_type'], apikey=cache_info['apikey'], system=cache_info['system'])
     if not client.start_session():
         print(client)
         print("Session start failed.")

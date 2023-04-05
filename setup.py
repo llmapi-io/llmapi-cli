@@ -64,7 +64,7 @@ setuptools.setup(
         '': ['*.py']
     },
     python_requires = '>=3.6',
-    install_requires = ['requests'],
+    install_requires = ['requests','numpy'],
     entry_points={
         'console_scripts': [
             'llmapi_cli = llmapi_cli:main',
