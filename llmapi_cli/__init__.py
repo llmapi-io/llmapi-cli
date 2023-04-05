@@ -24,7 +24,7 @@ import time
 from llmapi_cli.llmclient import LLMClient
 
 __name__ = 'llmapi_cli'
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 __description__ = 'Do you want to talk directly to the LLMs? Try llmapi.'
 __keywords__ = 'LLM OpenAPI LargeLanguageModel GPT3 ChatGPT Embedding'
 __author__ = 'llmapi'
@@ -184,6 +184,8 @@ def main():
                 print(e)
             try:
                 ret, rep = client.ask(prompt)
+                if type(rep) is not str:
+                    rep = str(rep)
             except Exception as e:
                 lock[0] = False
                 print("[ERR] Get reply failed, please try again.")

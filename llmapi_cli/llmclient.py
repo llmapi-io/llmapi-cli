@@ -14,7 +14,7 @@
 from typing import Optional
 import json
 import requests
-import numpy
+import numpy as np
 
 
 class LLMClient():
@@ -117,7 +117,7 @@ class LLMClient():
                    'content': prompt, 'timeout': timeout}
         rep = self._make_post(url, content)
         if 'code' in rep and rep['code'] == 0:
-            if bot_type == 'gpt-embedding':
+            if self.bot_type == 'gpt-embedding':
                 return rep['code'], json.loads(rep['reply'])
             return rep['code'], rep['reply']
         elif 'code' in rep:
@@ -125,7 +125,7 @@ class LLMClient():
         else:
             return -1, 'request failed'
 
-    def similarity(self, embedding1: dict, embedding2: dict) -> float:
+    def embedding_similarity(self, embedding1: dict, embedding2: dict) -> float:
         a = embedding1
         b = embedding2
         dot_product = np.dot(a, b)
@@ -148,6 +148,7 @@ class LLMClient():
         s += f"| host     | {self.host}\n"
         s += f"| session  | {self.session_id}\n"
         s += f"| bot_type | {self.bot_type}\n"
+        s += f"| system   | {self.system}\n"
         if self.apikey is not None:
             s += f"| apikey   | {self.apikey[0:3]+'*'*(len(self.apikey)-6)+self.apikey[-3:]}\n"
         else:
